@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Complaint Management Portal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .submitted {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Complaint Management Portal</h2>
+
+    <form id="complaintForm" class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label for="studentName" class="form-label">Student Name</label>
+            <input type="text" class="form-control" id="studentName" required>
+        </div>
+        <div class="mb-3">
+            <label for="department" class="form-label">Department</label>
+            <input type="text" class="form-control" id="department" required>
+        </div>
+        <div class="mb-3">
+            <label for="complaintText" class="form-label">Complaint</label>
+            <textarea class="form-control" id="complaintText" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Submit</button>
+    </form>
+
+    <hr>
+
+    <h4 class="mt-4">Submitted Complaints</h4>
+    <ul id="complaintList" class="list-group mt-3"></ul>
+</div>
+
+<script>
+    const form = document.getElementById('complaintForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const complaintList = document.getElementById('complaintList');
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const data = {
+            studentName: document.getElementById('studentName').value,
+            department: document.getElementById('department').value,
+            complaintText: document.getElementById('complaintText').value
+        };
+
+        fetch('/api/complaints', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(() => {
+            submitBtn.textContent = "Submitted";
+            submitBtn.classList.add("submitted");
+            form.reset();
+            loadComplaints();
+            setTimeout(() => {
+                submitBtn.textContent = "Submit";
+                submitBtn.classList.remove("submitted");
+            }, 2000);
+        });
+    });
+
+    function loadComplaints() {
+        fetch('/api/complaints')
+            .then(res => res.json())
+            .then(data => {
+                complaintList.innerHTML = '';
+                data.forEach(c => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    li.innerHTML = `
+                        <div>
+                            <strong>${c.studentName}</strong> - ${c.department}<br>
+                            <small>${c.complaintText}</small>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="deleteComplaint(${c.id})">Delete</button>
+                    `;
+                    complaintList.appendChild(li);
+                });
+            });
+    }
+
+    function deleteComplaint(id) {
+        if (confirm("Are you sure you want to delete this complaint?")) {
+            fetch(`/api/complaints/${id}`, {
+                method: 'DELETE'
+            }).then(response => {
+                if (response.ok) {
+                    loadComplaints();
+                } else {
+                    alert("Error deleting complaint.");
+                }
+            });
+        }
+    }
+
+    // Load complaints on page load
+    loadComplaints();
+</script>
+</body>
+</html>
