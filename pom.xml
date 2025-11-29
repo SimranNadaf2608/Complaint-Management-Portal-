@@ -70,7 +70,17 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Testing -->
+        <!-- keep your MySQL dependency as it is -->
+
+        <!-- ADD this for PostgreSQL on Render -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+
+        <!-- Testing -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
